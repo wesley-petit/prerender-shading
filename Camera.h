@@ -3,8 +3,9 @@
 #include "Ray.h"
 
 // Orthogonal camera
-class Camera
+class OrthogonalCamera
 {
 public:
-	Ray& ScreenToRay(Vector3& const position) const;
+	// Construit un raycast à partir de la position d'un pixel
+	Ray& ScreenToRay(const Vector3& pixelPosition) const;
 };

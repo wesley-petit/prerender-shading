@@ -11,6 +11,8 @@ struct Vector3
         std::cout << "(" << x << ", " << y << ", " << z << ")";
     }
 
+#pragma region  operators
+
     Vector3 operator*(const float f) const
     {
         return Vector3{ x * f, y * f, z * f };
@@ -37,15 +39,22 @@ struct Vector3
         return Vector3{ b.x - x, b.y - y, b.z - z };
     }
 
+#pragma endregion
+
     float normSquared() const
     {
         return x * x + y * y + z * z;
     }
 
+    float norm() const
+    {
+        return std::sqrt(normSquared());
+    }
+
     Vector3 unitVector() const
     {
-        const float norm = std::sqrt(normSquared());
-        return Vector3{ x / norm, y / norm, z / norm };
+        const float normVal = norm();
+        return Vector3{ x / normVal, y / normVal, z / normVal };
     }
 
     float dot(const Vector3 b) const

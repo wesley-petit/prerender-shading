@@ -41,5 +41,11 @@
     <ClInclude Include="LightSource.h">
       <Filter>Fichiers sources</Filter>
     </ClInclude>
+    <ClInclude Include="SI_RayTracing.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="RayHit.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

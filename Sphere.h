@@ -10,18 +10,16 @@
 #include <iostream>
 #include <optional>
 
-
 struct Sphere
 {
 	Vector3 center;
 	float radius;
 
-	Sphere(Vector3 c, float rad) :
-		center(c), radius(rad) {}
-
-	//TODO remplacer par un optinal<float>
-	float intersect(const Ray& ray) const
+	std::optional<float> intersect(const Ray& ray) const
 	{
+		// L'intersection est une équation de second degré
+		// il faut calculer les paramètres b et c pour déterminer l'inconnu t
+
 		//b = dot direction oc
 		Vector3 oc { center - ray.origin };
 		float b (ray.direction.dot(oc));
@@ -29,17 +27,19 @@ struct Sphere
 		//c = dot oc oc - r2
 		float c (oc.dot(oc) - radius * radius);
 
+		// delta = b² - 4ac, mais 4a ont pus être simplifiés
 		float delta = b * b - c;
 
 		//std::cout << "B : " << b << std::endl;
 		//std::cout << "C : " << c << std::endl;
 		//std::cout << "Delta : " << delta << std::endl;
 
-		if (delta < 0 && !floatEquals(delta, 0.0))
+		if (delta < 0 && !IsFloatEqual(delta, 0.0))
 		{
-			return {};
+			return std::nullopt;
 		}
 
+		// t = (- b +- (sqrt(delta)) / 2A
 		//t0 = b - sqrtDelta
 		//t1 = b + sqrtDelta
 		float sqrtDelta(sqrt(delta));
@@ -58,11 +58,12 @@ struct Sphere
 			return t1;
 		}
 
-		return  {};
+		return std::nullopt;
 	}
 };
 
-//
+
+// ---------------------------------------------- Pseudo Code de l'intersection ---------------------------------------------- 
 //```haskell
 //rayIntersectSphere::Ray->Sphere->Maybe Float
 //rayIntersectSphere Ray{ origin, direction } Sphere{ radius, center } =

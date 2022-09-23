@@ -139,6 +139,8 @@
     <ClInclude Include="CustomMath.h" />
     <ClInclude Include="LightSource.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="RayHit.h" />
+    <ClInclude Include="SI_RayTracing.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
