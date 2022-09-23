@@ -51,17 +51,11 @@ float GetOutgoingLightFor(const Sphere& current, const Ray& ray, float distanceW
 	float distance(directionLampe.norm());
 	Vector3 w0(directionLampe / distance);
 
-	// Distance entre l'origine du rayon et l'intersection
-	Vector3 directionCamera(ray.origin - x);
-	Vector3 wi(directionCamera / directionCamera.norm());
-
 	// Normale pour la surface d'intersection du rayon
 	Vector3 normal((x - current.center).unitVector());
 	
 	float f{ normal.dot(w0) / (float) M_PI};
-
-	//float cosTeta(normal.dot(wi));
-	float cosTeta(1.0f);
+	float cosTeta(std::abs(normal.dot(w0)));
 
 	return (lightSource.intensity * f * ALBEDO * cosTeta) / (distance * distance);
 }
@@ -83,30 +77,30 @@ int main()
 	std::vector<Sphere> spheres
 	{
 		//// Background
-		//{ { 200, 200, -100 }, 300 },
-		//
-		//// Ceilings / Floor
-		//{ { 1100, 200, -75 }, 750 },
-		//{ { -700, 200, -75 }, 750 },
-		//
-		//// Walls
-		//{ { 200, -700, -75 }, 750 },
-		//{ { 200, 1100, -75 }, 750 },
+		{ { 200, 200, -100 }, 300 },
+		
+		// Ceilings / Floor
+		{ { 1050, 200, -400 }, 750 },
+		{ { -650, 200, -400 }, 750 },
+		
+		// Walls
+		{ { 200, -650, -400 }, 750 },
+		{ { 200, 1050, -400 }, 750 },
 
 		 //Objects
 		//{ { 200, 170, -10 }, 50.0f },
-		{ { 260, 250, -10 }, 50.0f },
-		{ { 140, 250, -10 }, 50.0f },
+		{ { 260, 250, -55 }, 50.0f },
+		{ { 140, 250, -55 }, 50.0f },
 	};
-	LightSource lightSource { {200, 120, -5}, 50000000 };
+	LightSource lightSource { {200, 120, 0}, 50000000 };
 
 	Mat image = Mat::zeros(IMG_SIZE, IMG_SIZE, CV_8UC3);
 	image = Scalar(0, 0, 0);
 	const float MIN_INTENSITY = 0, MAX_INTENSITY = 255;
-
-	for (size_t y = 0; y < image.rows; y++)
+	//float allLightOutgoing[IMG_SIZE][IMG_SIZE];
+	for (size_t y = 0; y < IMG_SIZE; y++)
 	{
-		for (size_t x = 0; x < image.cols; x++)
+		for (size_t x = 0; x < IMG_SIZE; x++)
 		{
 			// Rayon pour déterminer la quantité de lumière à afficher par pixel
 			Vector3 pixelPosition{ Vector3{(float) x, (float) y, 0.0} };
@@ -115,18 +109,30 @@ int main()
 			// Récupère l'objet le plus proche afin de ne pas effectuer des calculs sur des éléments invisibles
 			RayHit rayHit(GetNearestHit(spheres, ray));
 
+			// Stocke la 
+			float lightOutgoing(0);
 			if (rayHit.object.has_value())
 			{
-				float lightOutgoing(GetOutgoingLightFor(*rayHit.object.value(), ray, rayHit.distance, lightSource));
-				//std::cout << "Light Outgoing " << lightOutgoing << std::endl;
+				lightOutgoing = GetOutgoingLightFor(*rayHit.object.value(), ray, rayHit.distance, lightSource);
 
+				// Applique la lumière dans l'image
 				Vec3b& color = image.at<Vec3b>(y, x);
 				unsigned char intensity(std::clamp(lightOutgoing, MIN_INTENSITY, MAX_INTENSITY));
 				color = { intensity, intensity, intensity };
 			}
+			//allLightOutgoing[y][x] = lightOutgoing;
 		}
 	}
 
+	//for (size_t y = 0; y < IMG_SIZE; y++)
+	//{
+	//	for (size_t x = 0; x < IMG_SIZE; x++)
+	//	{
+	//		Vec3b& color = image.at<Vec3b>(y, x);
+	//		unsigned char intensity(std::clamp(allLightOutgoing[y][x], MIN_INTENSITY, MAX_INTENSITY));
+	//		color = { intensity, intensity, intensity };
+	//	}
+	//}
 
 	imshow("Rendu", image);
 	//imwrite("C:/Users/wpetit/Desktop/Test.png", image);
@@ -134,4 +140,5 @@ int main()
 	waitKey(0);
 	return 0;
 }
+
 

@@ -33,10 +33,9 @@ struct Vector3
         return Vector3{ x + v.x, y + v.y, z + v.z };
     }
 
-    // Correspond à xb - xa, yb - ya, zb - za
     Vector3 operator-(const Vector3 b) const
     {
-        return Vector3{ b.x - x, b.y - y, b.z - z };
+        return Vector3{ x - b.x, y - b.y, z - b.z };
     }
 
 #pragma endregion
