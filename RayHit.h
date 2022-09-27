@@ -1,9 +1,9 @@
 #pragma once
 #include "Sphere.h"
-#include <optional>
 
 struct RayHit
 {
-	float distance;
-	std::optional<const Sphere*> object;
+    float distance;
+    const Sphere* object;
+    Vector3 impactPoint, normal;
 };

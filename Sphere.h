@@ -1,65 +1,61 @@
-#pragma once
-#include <iostream>
+ï»¿#pragma once
 #include <cmath>
+#include <functional>
+#include <optional>
 #include "CustomMath.h"
 #include "Vector3.h"
 #include "Ray.h"
 
-#include <string>
-#include <functional>
-#include <iostream>
-#include <optional>
-
 struct Sphere
 {
-	Vector3 center;
-	float radius;
+    Vector3 center;
+    float radius;
 
-	std::optional<float> intersect(const Ray& ray) const
-	{
-		// L'intersection est une équation de second degré
-		// il faut calculer les paramètres b et c pour déterminer l'inconnu t
+    std::optional<float> intersect(const Ray& ray) const
+    {
+        // L'intersection est une ï¿½quation de second degrï¿½
+        // il faut calculer les paramï¿½tres b et c pour dï¿½terminer l'inconnu t
 
-		//b = dot direction oc
-		Vector3 oc { center - ray.origin };
-		float b (ray.direction.dot(oc));
+        //b = dot direction oc
+        const Vector3 oc{ center - ray.origin };
+        const float b(ray.direction.dot(oc));
 
-		//c = dot oc oc - r2
-		float c (oc.dot(oc) - radius * radius);
+        //c = dot oc oc - r2
+        const float c(oc.dot(oc) - radius * radius);
 
-		// delta = b² - 4ac, mais 4a ont pus être simplifiés
-		float delta = b * b - c;
+        // delta = bï¿½ - 4ac, mais 4a ont pus ï¿½tre simplifiï¿½s
+        const float delta = b * b - c;
 
-		//std::cout << "B : " << b << std::endl;
-		//std::cout << "C : " << c << std::endl;
-		//std::cout << "Delta : " << delta << std::endl;
+        //std::cout << "B : " << b << std::endl;
+        //std::cout << "C : " << c << std::endl;
+        //std::cout << "Delta : " << delta << std::endl;
 
-		if (delta < 0 && !IsFloatEqual(delta, 0.0))
-		{
-			return std::nullopt;
-		}
+        if (delta < 0 && !IsFloatEqual(delta, 0.0))
+        {
+            return std::nullopt;
+        }
 
-		// t = (- b +- (sqrt(delta)) / 2A
-		//t0 = b - sqrtDelta
-		//t1 = b + sqrtDelta
-		float sqrtDelta(sqrt(delta));
-		float t0(b - sqrtDelta);
-		float t1(b + sqrtDelta);
+        // t = (- b +- (sqrt(delta)) / 2A
+        //t0 = b - sqrtDelta
+        //t1 = b + sqrtDelta
+        const float sqrtDelta(sqrt(delta));
+        const float t0(b - sqrtDelta);
+        const float t1(b + sqrtDelta);
 
-		//std::cout << "T0 : " << t0 << std::endl;
-		//std::cout << "T1 : " << t1 << std::endl;
+        //std::cout << "T0 : " << t0 << std::endl;
+        //std::cout << "T1 : " << t1 << std::endl;
 
-		if (0.0 < t0)
-		{
-			return t0;
-		}
-		else if (0.0 < t1)
-		{
-			return t1;
-		}
+        if (0.0 < t0)
+        {
+            return t0;
+        }
+        if (0.0 < t1)
+        {
+            return t1;
+        }
 
-		return std::nullopt;
-	}
+        return std::nullopt;
+    }
 };
 
 

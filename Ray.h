@@ -3,5 +3,5 @@
 
 struct Ray
 {
-	Vector3 origin, direction;
+    Vector3 origin, direction;
 };

@@ -66,4 +66,3 @@ inline Vector3 operator*(const float f, const Vector3 v)
 {
     return Vector3{ f * v.x, f * v.y, f * v.z };
 }
-

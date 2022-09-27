@@ -3,6 +3,6 @@
 
 struct LightSource
 {
-	Vector3 position;
-	float intensity;
+    Vector3 position;
+    float intensity;
 };
