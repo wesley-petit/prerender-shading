@@ -3,11 +3,13 @@
 
 #include "Vector3.h"
 #include "Ray.h"
+#include "ReflectionType.h"
 
 struct Shape
 {
     virtual std::optional<float> Intersect(const Ray& ray) const = 0;
     virtual Vector3 GetNormal(const Vector3& impactPoint) const = 0;
+    virtual ReflectionType GetReflectionType() const = 0;
 };
 
 template<typename T>
@@ -26,5 +28,10 @@ struct AnyShape : Shape
     virtual Vector3 GetNormal(const Vector3& impactPoint) const override
     {
         return obj.GetNormal(impactPoint);
+    }
+
+    virtual ReflectionType GetReflectionType() const override
+    {
+        return obj.GetReflectionType();
     }
 };

@@ -16,6 +16,9 @@
     <Filter Include="Fichiers d%27en-tête\Shape">
       <UniqueIdentifier>{b3626499-540b-4fe5-a45f-983405ef2d7b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\Light">
+      <UniqueIdentifier>{7b2c0a65-2fd5-4ee7-9bea-06a561db4b31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SI_RayTracing.cpp">
@@ -24,11 +27,14 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Vector3.h">
-      <Filter>Fichiers sources</Filter>
-    </ClInclude>
     <ClInclude Include="Ray.h">
       <Filter>Fichiers sources</Filter>
     </ClInclude>
@@ -36,9 +42,6 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="CustomMath.h">
-      <Filter>Fichiers sources</Filter>
-    </ClInclude>
-    <ClInclude Include="LightSource.h">
       <Filter>Fichiers sources</Filter>
     </ClInclude>
     <ClInclude Include="SI_RayTracing.h">
@@ -58,6 +61,15 @@
     </ClInclude>
     <ClInclude Include="World.h">
       <Filter>Fichiers d%27en-tête\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSource.h">
+      <Filter>Fichiers d%27en-tête\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="ReflectionType.h">
+      <Filter>Fichiers d%27en-tête\Light</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

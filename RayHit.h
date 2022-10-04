@@ -8,7 +8,6 @@ struct RayHit
     Vector3 impactPoint, normal;
 };
 
-
 struct ReflectionHit
 {
     std::optional<RayHit> nearestHit;
