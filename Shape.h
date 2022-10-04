@@ -1,8 +1,8 @@
 #pragma once
 #include <optional>
 
-struct Ray;
-struct Vector3;
+#include "Vector3.h"
+#include "Ray.h"
 
 struct Shape
 {

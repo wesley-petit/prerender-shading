@@ -7,3 +7,10 @@ struct RayHit
     const Shape* object;
     Vector3 impactPoint, normal;
 };
+
+
+struct ReflectionHit
+{
+    std::optional<RayHit> nearestHit;
+    bool bVisibleByLight;
+};
