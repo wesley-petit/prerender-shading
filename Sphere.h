@@ -11,7 +11,7 @@ struct Sphere
     Vector3 center;
     float radius;
 
-    std::optional<float> intersect(const Ray& ray) const
+    std::optional<float> Intersect(const Ray& ray) const
     {
         // L'intersection est une �quation de second degr�
         // il faut calculer les param�tres b et c pour d�terminer l'inconnu t
@@ -55,6 +55,11 @@ struct Sphere
         }
 
         return std::nullopt;
+    }
+
+    Vector3 GetNormal(const Vector3& impactPoint) const
+    {
+        return { (impactPoint - center).unitVector() };
     }
 };
 

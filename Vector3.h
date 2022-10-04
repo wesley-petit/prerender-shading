@@ -28,6 +28,11 @@ struct Vector3
         return Vector3{ x * v.x, y * v.y, z * v.z };
     }
 
+    Vector3 operator/(const Vector3 v) const
+    {
+        return Vector3{ x / v.x, y / v.y, z / v.z };
+    }
+
     Vector3 operator+(const Vector3 v) const
     {
         return Vector3{ x + v.x, y + v.y, z + v.z };
@@ -65,4 +70,10 @@ struct Vector3
 inline Vector3 operator*(const float f, const Vector3 v)
 {
     return Vector3{ f * v.x, f * v.y, f * v.z };
+}
+
+inline Vector3 operator/(const float f, const Vector3 v)
+{
+    Vector3 fVector{ f, f, f };
+    return f / v;
 }
