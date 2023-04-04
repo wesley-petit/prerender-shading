@@ -1,14 +1,14 @@
 #pragma once
 #include <optional>
 
-#include "Vector3.h"
+#include <glm/glm.hpp>
 #include "Ray.h"
 #include "ReflectionType.h"
 
 struct Shape
 {
     virtual std::optional<float> Intersect(const Ray& ray) const = 0;
-    virtual Vector3 GetNormal(const Vector3& impactPoint) const = 0;
+    virtual glm::vec3 GetNormal(const glm::vec3& impactPoint) const = 0;
     virtual ReflectionType GetReflectionType() const = 0;
 };
 
@@ -25,7 +25,7 @@ struct AnyShape : Shape
         return obj.Intersect(ray);
     }
 
-    virtual Vector3 GetNormal(const Vector3& impactPoint) const override
+    virtual glm::vec3 GetNormal(const glm::vec3& impactPoint) const override
     {
         return obj.GetNormal(impactPoint);
     }

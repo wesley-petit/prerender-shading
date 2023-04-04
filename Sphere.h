@@ -1,16 +1,15 @@
 ﻿#pragma once
 #include <optional>
 #include "ReflectionType.h"
-struct Vector3;
 
 struct Sphere
 {
-    Vector3 center;
+    glm::vec3 center;
     float radius;
     ReflectionType reflectionType;
 
     std::optional<float> Intersect(const Ray& ray) const;
-    Vector3 GetNormal(const Vector3& impactPoint) const;
+    glm::vec3 GetNormal(const glm::vec3& impactPoint) const;
     ReflectionType GetReflectionType() const;
 };
 

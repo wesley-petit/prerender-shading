@@ -1,8 +1,8 @@
 #pragma once
-#include "Vector3.h"
+#include <glm/glm.hpp>
 
 struct LightSource
 {
-    Vector3 position;
+    glm::vec3 position;
     float intensity;
 };

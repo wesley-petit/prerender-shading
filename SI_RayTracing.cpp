@@ -8,13 +8,15 @@
 #include <limits>
 #include <optional>
 #include <vector>
+#include <math.h>
+#include <glm/glm.hpp>
+#include <glm/gtx/norm.hpp>
 
 #include "World.h"
 #include "LightSource.h"
 #include "Shape.h"
 #include "Sphere.h"
 #include "Camera.h"
-#include "Vector3.h"
 #include "Ray.h"
 #include "RayHit.h"
 #include "SI_RayTracing.h"
@@ -38,8 +40,8 @@ std::optional<RayHit> GetNearestHit(const std::vector<Shape*>& shapes, const Ray
             minDistance = t.value();
 
             // Point d'intersection et la normale touché par le rayon
-            const Vector3 impactPoint(ray.origin + minDistance * ray.direction);
-            const Vector3 normal(current->GetNormal(impactPoint));
+            const glm::vec3 impactPoint(ray.origin + minDistance * ray.direction);
+            const glm::vec3 normal(current->GetNormal(impactPoint));
             nearestHit = { minDistance, current, impactPoint, normal };
         }
     }
@@ -47,29 +49,17 @@ std::optional<RayHit> GetNearestHit(const std::vector<Shape*>& shapes, const Ray
     return nearestHit;
 }
 
-std::optional<RayHit> CalculateReflection(const Vector3& origin, const Vector3& destination, const World& world)
-{
-    const Vector3 reflectionDir(destination - origin);
-    const Vector3 reflectionDirNormalize(reflectionDir.unitVector());
-
-    // Rayon entre le point d'intersection et la lumière
-    // Décale le point d'impact avec la direction de la lumière pour éviter de redétecter la forme touché par l'impact point
-    const Ray ray{ origin + reflectionDirNormalize, reflectionDirNormalize };
-
-    return GetNearestHit(world.shapes, ray);
-}
-
 bool IsVisibleByLight(const RayHit& rayHit, const World& world)
 {
-    const Vector3 reflectionDir(world.lightSource.position - rayHit.impactPoint);
-    const Vector3 reflectionDirNormalize(reflectionDir.unitVector());
+    const glm::vec3 reflectionDir(world.lightSource.position - rayHit.impactPoint);
+    const glm::vec3 reflectionDirNormalize(glm::normalize(reflectionDir));
 
     // Rayon entre le point d'intersection et la lumière
     // Décale le point d'impact avec la direction de la lumière pour éviter de redétecter la forme touché par l'impact point
     const Ray ray{ rayHit.impactPoint + reflectionDirNormalize, reflectionDirNormalize };
     const std::optional<RayHit> lightRayHit(GetNearestHit(world.shapes, ray));
 
-    if (lightRayHit.has_value() && lightRayHit.value().distance < reflectionDir.norm())
+    if (lightRayHit.has_value() && lightRayHit.value().distance < glm::length(reflectionDir))
     {
         return false;
     }
@@ -82,38 +72,50 @@ float GetOutgoingLightFor(const RayHit& rayHit, const LightSource& lightSource)
     const float ALBEDO = 0.7f;
 
     // Direction entre la lampe et l'intersection
-    const Vector3 lightDir(lightSource.position - rayHit.impactPoint);
-    const Vector3 w0(lightDir.unitVector());
+    const glm::vec3 lightDir(lightSource.position - rayHit.impactPoint);
+    const glm::vec3 w0(glm::normalize(lightDir));
 
     // Fonction de transfert de la lumière selon l'angle du rayon
-    const float f{ rayHit.normal.dot(w0) / static_cast<float>(M_PI) };
-    const float cosTeta(std::fabs(rayHit.normal.dot(w0)));
+    const float f{ glm::dot(rayHit.normal, w0) / static_cast<float>(M_PI) };
+    const float cosTeta(std::fabs(glm::dot(rayHit.normal, w0)));
 
-    return (lightSource.intensity * f * ALBEDO * cosTeta) / (lightDir.normSquared());
+    return (lightSource.intensity * f * ALBEDO * cosTeta) / (glm::length2(lightDir));
 }
 
-Vector3 CalculateReflectDirection(const Vector3& incidentDirection, const Vector3& hitNormal)
+Ray GetReflectRay(const glm::vec3& incident, const RayHit& rayHit)
 {
     //https://registry.khronos.org/OpenGL-Refpages/gl4/html/reflect.xhtml
-    return incidentDirection - 2.0f * incidentDirection.dot(hitNormal) * hitNormal;
+    const glm::vec3 r(incident - 2.0f * glm::dot(incident, rayHit.normal) * rayHit.normal);
+    return { rayHit.impactPoint + r, r };
 }
 
-Vector3 CalculateRefractedDirection(const Vector3& incidentDirection, const Vector3& hitNormal)
+std::optional<glm::vec3> CalculateRefractionDirection(const glm::vec3& incident, const glm::vec3& normal)
 {
     //https://registry.khronos.org/OpenGL-Refpages/gl4/html/refract.xhtml
-    return incidentDirection - 2.0f * incidentDirection.dot(hitNormal) * hitNormal;
+    // Ratio de l'indice de refraction du verre (1.5)
+    const float eta(1 / 1.5f);
+    const float dotProduct(glm::dot(incident, normal));
+
+    const float k(1.0 - eta * eta * (1.0 - dotProduct * dotProduct));
+    if (k < 0.0)
+    {
+        return std::nullopt;
+    }
+
+    return eta * incident - (eta * dotProduct + std::sqrt(k)) * normal;
 }
 
-Vector3 GetRadiance(const Ray& ray, const World& world, int& currentDepth)
+glm::vec3 GetRadiance(const Ray& ray, const World& world, int currentDepth)
 {
-    const Vector3 NO_OBJECT{ 0, 0, 0 };
-    const Vector3 SHADOW{ 0, 0, 0 };
-    const Vector3 STACK_OVERFLOW_LIMIT{ 200, 50, 50 };
-    const Vector3 REFLECTION_NOT_SUPPORTED{ 50, 50, 200 };
+    const glm::vec3 DEBUG_NO_OBJECT{ 0, 0, 0 };
+    const glm::vec3 DEBUG_SHADOW{ 0, 0, 0 };
+    const glm::vec3 DEBUG_STACK_OVERFLOW_LIMIT{ 50, 200, 50 };
+    const glm::vec3 DEBUG_REFLECTION_NOT_SUPPORTED{ 50, 50, 200 };
+    const int STACK_OVERFLOW_LIMIT(10);
 
-    if (10 < currentDepth)
+    if (STACK_OVERFLOW_LIMIT < currentDepth)
     {
-        return STACK_OVERFLOW_LIMIT;
+        return DEBUG_STACK_OVERFLOW_LIMIT;
     }
 
     // ------------------------------------------ Rayon pour déterminer s'il y a un objet ------------------------------------------
@@ -123,37 +125,69 @@ Vector3 GetRadiance(const Ray& ray, const World& world, int& currentDepth)
     bool bBlockingHit(rayHit.has_value());
     if (!bBlockingHit)
     {
-        return NO_OBJECT;
+        return DEBUG_NO_OBJECT;
     }
 
-    // ------------------------------------------ Rayon pour déterminer la visibilité par la lumière ------------------------------------------
-    const ReflectionType& hitReflection(rayHit.value().object->GetReflectionType());
+    const RayHit& hit(rayHit.value());
+
+    // ------------------------------------------ Illumination Directe ------------------------------------------
+    const ReflectionType& hitReflection(hit.object->GetReflectionType());
     if (hitReflection == ReflectionType::Normal)
     {
         // Détermine la visibilité d'un objet par la lumière
-        if (IsVisibleByLight(rayHit.value(), world))
+        if (IsVisibleByLight(hit, world))
         {
-            float lightOutgoing(GetOutgoingLightFor(rayHit.value(), world.lightSource));
+            float lightOutgoing(GetOutgoingLightFor(hit, world.lightSource));
+
+            if (lightOutgoing <= 0)
+            {
+                std::cout << "LO négative : " << lightOutgoing << "\n";
+            }
 
             // Retourne la lumi�re dans l'image
-            return Vector3{ lightOutgoing, lightOutgoing, lightOutgoing };
+            return glm::vec3{ lightOutgoing, lightOutgoing, lightOutgoing };
         }
 
-        return SHADOW;
+        return DEBUG_SHADOW;
     }
 
-    // ------------------------------------------ Rayon pour déterminer l'objet réfléchi par le mémoire ------------------------------------------
+    // ------------------------------------------ Illumination Indirecte ------------------------------------------
     if (hitReflection == ReflectionType::Mirror)
     {
-        const Vector3 reflectDir(CalculateReflectDirection(ray.direction, rayHit.value().normal));
-        const Ray reflectRay{ rayHit.value().impactPoint + reflectDir * 2, reflectDir };
-        currentDepth++;
-
-        return GetRadiance(reflectRay, world, currentDepth);
+        const Ray reflectRay(GetReflectRay(ray.direction, hit));
+        return GetRadiance(reflectRay, world, currentDepth + 1);
     }
 
-    std::cout << " Reflection Type not supported.\n";
-    return REFLECTION_NOT_SUPPORTED;
+    // ------------------------------------------ Rayon pour déterminer la réfraction dans les surfaces transparentes ------------------------------------------
+    if (hitReflection == ReflectionType::Glass)
+    {
+        const Ray reflectRay(GetReflectRay(ray.direction, hit));
+        glm::vec3 reflectedRadiance(GetRadiance(reflectRay, world, currentDepth + 1));
+
+        const auto r(CalculateRefractionDirection(ray.direction, hit.normal));
+
+        if (!r.has_value())
+        {
+            std::cout << "Valeur nulle pour la réfraction." << "\n";
+            return DEBUG_REFLECTION_NOT_SUPPORTED;
+        }
+
+        const Ray refractedRay{ hit.impactPoint + r.value(), r.value()};
+        glm::vec3 refractedRadiance(GetRadiance(refractedRay, world, currentDepth + 1));
+
+        const glm::vec3 r0Sqrt((reflectedRadiance - refractedRadiance) / (reflectedRadiance + refractedRadiance));
+        const glm::vec3 r0(r0Sqrt * r0Sqrt);
+
+        const glm::vec3 lightDir(world.lightSource.position - hit.impactPoint);
+        const glm::vec3 w0(glm::normalize(lightDir));
+        const float cosTeta(std::fabs(glm::dot(hit.normal, w0)));
+
+        //TODO replace
+        //return r0 + (1 - r0) * std::pow((1 - cosTeta), 5);
+    }
+
+    //std::cout << "Reflection Type not supported.\n";
+    return DEBUG_REFLECTION_NOT_SUPPORTED;
 }
 
 int main()
@@ -180,8 +214,8 @@ int main()
 
         //Objects
         //{ { { 200, 170, -10 }, 50.0f } },
-        { { { 260, 250, -55}, 50.0f, ReflectionType::Mirror } },
-        { { { 140, 250, -55}, 50.0f, ReflectionType::Mirror } },
+        { { { 260, 250, -55}, 50.0f, ReflectionType::Glass } },
+        { { { 140, 250, -55}, 50.0f, ReflectionType::Glass } },
     };
 
     std::vector<Shape*> shapes;
@@ -212,11 +246,10 @@ int main()
         for (size_t x = 0; x < IMG_SIZE; x++)
         {
             // Rayon pour d�terminer la quantit� de lumi�re � afficher par pixel
-            Vector3 pixelPosition{ Vector3{static_cast<float>(x), static_cast<float>(y), 0.0} };
+            glm::vec3 pixelPosition{ glm::vec3{static_cast<float>(x), static_cast<float>(y), 0.0} };
             Ray ray = camera.ScreenToRay(pixelPosition);
 
-            int currentDepth(0);
-            Vector3 radiance(GetRadiance(ray, world, currentDepth));
+            glm::vec3 radiance(GetRadiance(ray, world, 0));
 
             cv::Vec3b& color = image.at<cv::Vec3b>(y, x);
             unsigned char b(std::clamp(radiance.x, MIN_INTENSITY, MAX_INTENSITY));

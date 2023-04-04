@@ -1,7 +1,6 @@
 ﻿#include <cmath>
 #include <functional>
 #include "CustomMath.h"
-#include "Vector3.h"
 #include "Ray.h"
 #include "Sphere.h"
 
@@ -11,11 +10,11 @@ std::optional<float> Sphere::Intersect(const Ray& ray) const
     // il faut calculer les param�tres b et c pour d�terminer l'inconnu t
 
     //b = dot direction oc
-    const Vector3 oc{ center - ray.origin };
-    const float b(ray.direction.dot(oc));
+    const glm::vec3 oc{ center - ray.origin };
+    const float b(glm::dot(ray.direction, oc));
 
     //c = dot oc oc - r2
-    const float c(oc.dot(oc) - radius * radius);
+    const float c(glm::dot(oc, oc) - radius * radius);
 
     // delta = b� - 4ac, mais 4a ont pus �tre simplifi�s
     const float delta = b * b - c;
@@ -51,9 +50,9 @@ std::optional<float> Sphere::Intersect(const Ray& ray) const
     return std::nullopt;
 }
 
-Vector3 Sphere::GetNormal(const Vector3& impactPoint) const
+glm::vec3 Sphere::GetNormal(const glm::vec3& impactPoint) const
 {
-    return { (impactPoint - center).unitVector() };
+    return { glm::normalize(impactPoint - center) };
 }
 
 ReflectionType Sphere::GetReflectionType() const
